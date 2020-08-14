@@ -2,10 +2,10 @@ function varargout = movement_task(varargin)
 Screen('Preference', 'SkipSyncTests', 1);
 
 %% Participant number
-SUB_NUM_ = 'ML_012';
+SUB_NUM_ = 'test00';
 
 %% Specify trial list
-screen_dims = [1980, 1020];
+screen_dims = [1600, 900];
 
 home_position = screen_dims/2;
 TARG_LEN = 350;
@@ -14,7 +14,7 @@ targ_angles = repmat(((0:120:359) + 10)', 2, 1);
 targ_coords_base = TARG_LEN*[cosd(targ_angles), sind(targ_angles)] + repmat(home_position, 6, 1);
 
 %% initialize joystick
-joy = vrjoystick(1);
+joy = HebiJoystick(1);
 x = nan(1, 10000);
 y = nan(1, 10000);
 tim = nan(1, 10000);
@@ -34,7 +34,7 @@ im_list = cell(1,4);
 
 CUE_TIME = .750; %sec
 RET_TIME = 3; %sec
-TR_TIME = 1.1; %sec 
+TR_TIME = 1.1; %sec
 MOV_TIME = 1.9; % (1.1 for targ disp, 1.9 for movement)
 MOV_LIMIT_TIME = .75; %time limit of movement
 TR_TOLERANCE = .15;
@@ -74,25 +74,23 @@ bubble_expand_rate = 700;
 
 %% Intialise digital IO
 interSample = .01;
-[jo, jh] = initiate_labjack;
-send_trigger_to_initiated_lj(jo, jh, 0);
-% daqDevice = daqhwinfo('nidaq');
+lj = labJack('verbose', false)
 
 %%
 % [trial_target_numbers_MASTER, trial_type_MASTER, prescribed_PT_MASTER] = generate_trial_table_E1retention_v5_ECoG_RT(SUB_NUM_);
 %load('C:\Users\Scan Computer\Documents\MATLAB\vma_task\vma_retention 2\trial_parameters_P001_RT.mat')
 % load('C:\Users\Scan Computer\Documents\MATLAB\task_battery\movement\trial_parameters_ML012.mat')
-load(['C:\Users\kathr\Documents\MATLAB\task_battery\movement', filesep, 'trial_parameters_ML012.mat']);
+load(['~/Documents/MATLAB/ieeg_taskbattery/movement/', 'trial_parameters_ML012.mat']);
 % RET_TIME = prescribed_ret;
-trial_target_numbers_MASTER =  trial_target_numbers; 
+trial_target_numbers_MASTER =  trial_target_numbers;
 trial_type_MASTER = trial_type;
 prescribed_PT_MASTER = prescribed_PT;
 
 screens=Screen('Screens');
-screenNumber=min(screens);
+screenNumber=max(screens);
 [win, rect] = Screen('OpenWindow', screenNumber, []); %[0 0 1600 900]);
 o = Screen('TextSize', win, 24);
-for block_num =4:8
+for block_num =1%4:8
     switch block_num
         case 1
             this_trials = 1:12;
@@ -127,14 +125,14 @@ for block_num =4:8
             trial_type = trial_type_MASTER(this_trials);
             trial_target_numbers = trial_target_numbers_MASTER(this_trials);
             prescribed_PT = prescribed_PT_MASTER(this_trials);
-            
+
         case 7
             % mixed block
             this_trials = 12*3 + 54*3 + (1:54);
             trial_type = trial_type_MASTER(this_trials);
             trial_target_numbers = trial_target_numbers_MASTER(this_trials);
             prescribed_PT = prescribed_PT_MASTER(this_trials);
-            
+
         case 8
             % mixed block
             this_trials = 12*3 + 54*4 + (1:42);
@@ -166,20 +164,14 @@ for block_num =4:8
     Data.EventTimes = cell(N_TRS, 1);
     %% initialize kinematics
     kinematics = nan(10000, 3);
-    
+
     %% wait for subject to begin new block
     Screen('DrawText', win, 'Experiment will start momentarily.', round(screen_dims(1)/2), round(screen_dims(2)/2));
     Screen('Flip', win);
-    pause(2);
+    pause(.2);
     %% run through trial list
 
     try
-        
-
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%% CAMERA KAPTURE
-%         grabber = Screen('OpenVideoCapture', win);
-%         Screen('StartVideoCapture', grabber, 60, 1);
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%% CAMERA KAPTURE
 
 %         exp_time = tic;
         exp_time = GetSecs;
@@ -209,8 +201,7 @@ for block_num =4:8
             k_oval_buff = 0;
             send_trigger = 0;
             trigger_value = 0;
-            
-    %         curr_target = targ_coords_base(trial_target_numbers(i_tr), :);
+
             curr_target = home_position;
             while ~isequal(state, 'end_state')
 
@@ -224,15 +215,15 @@ for block_num =4:8
                     end
                 end
 
-               
-                 
+
+
                 %%%%%% joystick read
                 [temp_p, temp_jkeys,~] = read(joy);
                 temp_p = [(temp_p(1)+1)/2, (temp_p(2)+1)/2];
                 temp_jkey = temp_jkeys(1);
                 kinematics(k_samp, :) = [(GetSecs - exp_time), temp_p.*[SCREEN_COORD_X, SCREEN_COORD_Y]];% translate to screen coordinates
                 %%%%%%
-               
+
                 Screen('FillOval', win, [cursor_color, screen_color_buff],...
                     [[kinematics(k_samp, 2:3), kinematics(k_samp, 2:3)]' + cursor_dims, ...
                     screen_oval_buff]);
@@ -252,8 +243,8 @@ for block_num =4:8
                         Screen('DrawTexture', win, screen_pic_buff{i_pic}, screen_picDim_buff{1, i_pic}, screen_picDim_buff{2, i_pic});
                     end
                 end
-                if draw_bubble_flag == -100 %1 
-                    Screen('FrameOval', win, 1, [home_position home_position]' + screen_bubble_buff(:)); 
+                if draw_bubble_flag == -100 %1
+                    Screen('FrameOval', win, 1, [home_position home_position]' + screen_bubble_buff(:));
                     if norm(kinematics(k_samp, 2:3) - home_position) < screen_bubble_buff(end)
                         draw_red_cursor_flag = 1;
                     end
@@ -263,21 +254,13 @@ for block_num =4:8
 %                         [kinematics(k_samp, 2:3), kinematics(k_samp, 2:3)]' + cursor_dims);
 %                   For RT version... don't draw the red cursor
                 end
-                % MAIN SCREEN FLIP OF EACH CYCLE
-                    %Screen('Flip', win); %moved to within if/else statment
-                    %below so that the time the flip takes can be presicely
-                    %measured using the trigger itself. Trigger goes up
-                    %before the flip and falls after the flip, precisely
-                    %demarking exactly the time in the data when the
-                    %stimulus was presented.
-                % SEND TRIGGER AT TIME OF FLIP IF DESIRED
+
                 if send_trigger == 1
-%                     putvalue(dio,trigger_value); % send home state trig
-                    send_trigger_to_initiated_lj(jo, jh, trigger_value);
+                  % send pulse to daq
+                    lj.setDIO(trigger_value)
                     [t_flip_0, t_stim, t_flip_f] = Screen('Flip', win);
-                    %pause(interSample);
-%                     putvalue(dio,0); %return trigger to 0
-                    send_trigger_to_initiated_lj(jo, jh, 0);
+                    lj.setDIO(0)
+
                     send_trigger = 0;
                     flip_onset_times(k_samp) = t_flip_0 - exp_time;
                     flip_offset_times(k_samp) = t_flip_f - exp_time;
@@ -288,8 +271,8 @@ for block_num =4:8
                     flip_offset_times(k_samp) = t_flip_f - exp_time;
                     stim_times(k_samp) = t_stim - exp_time;
                 end
-                
-                
+
+
                 switch state
                     case 'prestart'
                         if entrance == 1
@@ -316,13 +299,10 @@ for block_num =4:8
                                 state = 'home';
                                 draw_text_flag = 0;
                                 draw_pic_flag = 0;
-                                
+
                                 trigger_value = 15;
                                 send_trigger = 1;
                                 Data.time_precue_disp(i_tr) = (GetSecs - exp_time);
-                                %putvalue(dio,15); % send home state trig
-                                %pause(interSample);
-                                %putvalue(dio,0); %return trigger to 0
                             else
                                 % have not reached home & pressed key1 yet
                             end
@@ -332,7 +312,7 @@ for block_num =4:8
                             % first entrance into home state
                             home_start_time = (GetSecs - trial_time);
                             switch trial_type(i_tr)
-                                case 4 % catch trial 
+                                case 4 % catch trial
                                     rnd_ind = randperm(3);
                                     switch trial_target_numbers(i_tr)
                                         case 1
@@ -347,7 +327,7 @@ for block_num =4:8
                                             temp_alt_targ = [1 2 4];
                                             temp_tx = Screen('MakeTexture', win, im_list{temp_alt_targ(rnd_ind(1))});
                                             tx_size = size(im_list{temp_alt_targ(rnd_ind(1))});
-                                        case 4 
+                                        case 4
                                             temp_alt_targ = [1 2 3];
                                             temp_tx = Screen('MakeTexture', win, im_list{temp_alt_targ(rnd_ind(1))});
                                             tx_size = size(im_list{temp_alt_targ(rnd_ind(1))});
@@ -364,7 +344,7 @@ for block_num =4:8
                                     rnd_ind = randperm(3);
                                     k_oval_buff = k_oval_buff + 1;
                                     switch trial_target_numbers(i_tr)
-                                        case 1       
+                                        case 1
                                             temp_alt_targ = [2 3 4];
                                             screen_oval_buff(:, k_oval_buff) = [targ_coords_base(temp_alt_targ(rnd_ind(1)),:)'; targ_coords_base(temp_alt_targ(rnd_ind(1)),:)'] + target_dims;
                                             screen_color_buff(:, k_oval_buff) = [0; 0; 0];
@@ -379,7 +359,7 @@ for block_num =4:8
                                             screen_oval_buff(:, k_oval_buff) = [targ_coords_base(temp_alt_targ(rnd_ind(1)),:)'; targ_coords_base(temp_alt_targ(rnd_ind(1)),:)'] + target_dims;
                                             screen_color_buff(:, k_oval_buff) = [0; 0; 0];
                                             %Data.Target(i_tr) = 5;
-                                        case 4 
+                                        case 4
                                             temp_alt_targ = [1 2 3];
                                             screen_oval_buff(:, k_oval_buff) = [targ_coords_base(temp_alt_targ(rnd_ind(1)),:)'; targ_coords_base(temp_alt_targ(rnd_ind(1)),:)'] + target_dims;
                                             screen_color_buff(:, k_oval_buff) = [0; 0; 0];
@@ -399,10 +379,10 @@ for block_num =4:8
                                         case 3
                                             temp_tx = Screen('MakeTexture', win, im_list{3});
                                             tx_size = size(im_list{3});
-                                        case 4 
+                                        case 4
                                             temp_tx = Screen('MakeTexture', win, im_list{4});
                                             tx_size = size(im_list{4});
-                                        case 5 
+                                        case 5
                                             temp_tx = Screen('MakeTexture', win, im_list{5});
                                             tx_size = size(im_list{5});
                                         case 6
@@ -427,7 +407,7 @@ for block_num =4:8
                                     Data.Target(i_tr) = trial_target_numbers(i_tr);
                                 otherwise
                                     error('No valid trial type specified.')
-                            end 
+                            end
                             entrance = 0;
                             curr_target = targ_coords_base(trial_target_numbers(i_tr),:);
                         else
@@ -590,8 +570,8 @@ for block_num =4:8
                             % save just in case:
                             Data.ViewTime = Data.pPT - Data.RT;
                             Data.x_track = x; Data.y_track = y; Data.t_track = tim;
-                            save('last_trial_ecog_temp', 'Data'); 
-                            
+                            save('last_trial_ecog_temp', 'Data');
+
                             % count trials from 1 to 10, repeat:
                             temp_count_tr = mod(i_tr-1, 10) + 1;
                             send_trigger = 1;
@@ -599,7 +579,7 @@ for block_num =4:8
                             %putvalue(dio,temp_count_tr); % send home state trig
                             %pause(interSample);
                             %putvalue(dio,0); %return trigger to 0
-                            
+
                             entrance = 0;
                         else
                             if ((GetSecs - trial_time) - ITI_state_time) > FB_TIME
@@ -622,13 +602,7 @@ for block_num =4:8
                 k_samp = k_samp + 1;
             end
         end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%% CAMERA KAPTURE
-%         if exist('grabber')
-%                 Screen('StopVideoCapture', grabber);
-%                 Screen('CloseVideoCapture', grabber);
-%         end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%% CAMERA KAPTURE
-%         sca;
+
     catch
         try
             warning('An error occured')
@@ -636,18 +610,10 @@ for block_num =4:8
             uniqueness_code = now*10000000000;
             save([SUB_NUM_, num2str(uniqueness_code)], 'Data');
             varargout = {0, lasterror, Data, kinematics, delays};
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%% CAMERA KAPTURE
-%             Screen('StopVideoCapture', grabber);
-%             Screen('CloseVideoCapture', grabber);
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%% CAMERA KAPTURE
             sca;
             return
         catch
             try
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%% CAMERA KAPTURE
-%                 Screen('StopVideoCapture', grabber);
-%                 Screen('CloseVideoCapture', grabber);
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%% CAMERA KAPTURE
                 sca
                 return
             catch
@@ -664,13 +630,13 @@ for block_num =4:8
     varargout = {1, [], Data, kinematics, delays};
     uniqueness_code = now*10000000000;
     save([SUB_NUM_, num2str(uniqueness_code)], 'Data');
-    
+
     %% between blocks break
     if block_num < 8 && quit_command == 0
         Screen('Flip', win);
         Screen('DrawText', win, 'This is a mandatory 10 second break.', round(screen_dims(1)/2), round(screen_dims(2)/2));
         Screen('Flip', win);
-        
+
         pause(5);
         Screen('DrawText', win, '...5 more seconds', round(screen_dims(1)/2), round(screen_dims(2)/2));
         Screen('Flip', win);
