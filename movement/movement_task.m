@@ -2,7 +2,7 @@ function varargout = movement_task(varargin)
 Screen('Preference', 'SkipSyncTests', 1);
 
 %% Participant number
-SUB_NUM_ = 'test00';
+SUB_NUM_ = 'LB013';
 
 %% Specify trial list
 screen_dims = [1600, 900];
@@ -80,7 +80,7 @@ lj = labJack('verbose', false)
 % [trial_target_numbers_MASTER, trial_type_MASTER, prescribed_PT_MASTER] = generate_trial_table_E1retention_v5_ECoG_RT(SUB_NUM_);
 %load('C:\Users\Scan Computer\Documents\MATLAB\vma_task\vma_retention 2\trial_parameters_P001_RT.mat')
 % load('C:\Users\Scan Computer\Documents\MATLAB\task_battery\movement\trial_parameters_ML012.mat')
-load(['~/Documents/MATLAB/ieeg_taskbattery/movement/', 'trial_parameters_ML012.mat']);
+load(['~/Documents/MATLAB/ieeg_taskbattery/movement/', 'trial_parameters_LB013.mat']);
 % RET_TIME = prescribed_ret;
 trial_target_numbers_MASTER =  trial_target_numbers;
 trial_type_MASTER = trial_type;

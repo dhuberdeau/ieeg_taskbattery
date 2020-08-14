@@ -11,14 +11,14 @@ prescribed_PT_begin_S1 = .5*rand(1,12);%linspace(.8, 0, 12);
 
 %% Block 2 (Direct practice)
 % No catch trials
-trial_type_begin_ = [2*ones(1,12)];
+trial_type_begin_ = [zeros(1,12)];
 trial_type_begin_D1 = trial_type_begin_(randperm(length(trial_type_begin_)));
 trial_target_numbers_begin_ = [ones(1,3), 2*ones(1,3), 3*ones(1,3), 4*ones(1,3)];
 trial_target_numbers_begin_D1 = trial_target_numbers_begin_(randperm(length(trial_target_numbers_begin_)));
 prescribed_PT_begin_D1 = .5*rand(1,12); %linspace(.8, 0, 12);
 
 %% Block 3 (No cue practice)
-trial_type_begin_ = [zeros(1,12)];
+trial_type_begin_ = [zeros(1,6), ones(1,6)];
 trial_type_begin_N1 = trial_type_begin_(randperm(length(trial_type_begin_)));
 trial_target_numbers_begin_ = [ones(1,3), 2*ones(1,3), 3*ones(1,3), 4*ones(1,3)];
 trial_target_numbers_begin_N1 = trial_target_numbers_begin_(randperm(length(trial_target_numbers_begin_)));
@@ -26,7 +26,7 @@ prescribed_PT_begin_N1 = .5*rand(1,12);%zeros(1,12); %linspace(.8, 0, 12);
 
 %% Blocks 4, 7, 10 (Symbolic Main)
 trial_target_seed = repmat(repmat(reshape(repmat(1:4, 3, 1), 1, 4*3), 1, 5), 1, 3);
-trial_type_seed = repmat(repmat(repmat([2, 2, 2], 1, 4), 1, 5), 1, 3);
+trial_type_seed = repmat(repmat(repmat([1, 0, 1, 0], 1, 3), 1, 5), 1, 3);
 
 trial_randomize = randperm(length(trial_target_seed));
 trial_target_numbers_ = trial_target_seed(trial_randomize);
@@ -40,7 +40,7 @@ prescribed_PT_ = [gen_rand_PT(), gen_rand_PT(), gen_rand_PT(),...
     gen_rand_PT(), gen_rand_PT(), gen_rand_PT()];
 
 trial_target_catch_seed = [1:4, 1:4, 1:4, 1:4, 1:4];
-trial_type_catch_seed = [[4*ones(1,4)], [4*ones(1,4)], [4*ones(1,4)], [4*ones(1,4)], [4*ones(1,4)]];
+trial_type_catch_seed = [[3*ones(1,4)], [3*ones(1,4)], [3*ones(1,4)], [3*ones(1,4)], [3*ones(1,4)]];
 trial_catch_randomize = randperm(length(trial_target_catch_seed));
 trial_target_catch = trial_target_catch_seed(trial_catch_randomize);
 trial_type_catch = trial_type_catch_seed(trial_catch_randomize);
